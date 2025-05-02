@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  auth-service:
+    build:
+      context: ./auth
+    ports:
+      - "8000:8000"
+    networks:
+      - ecommerce-network
+
+  product-service:
+    build:
+      context: ./product
+    ports:
+      - "8001:8001"
+    networks:
+      - ecommerce-network
+
+  cart-service:
+    build:
+      context: ./cart
+    ports:
+      - "8002:8002"
+    networks:
+      - ecommerce-network
+
+  order-service:
+    build:
+      context: ./order
+    ports:
+      - "8003:8003"
+    depends_on:
+      - cart-service
+    networks:
+      - ecommerce-network
+
+networks:
+  ecommerce-network:
+    driver: bridge
