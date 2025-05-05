@@ -1,20 +1,27 @@
+# Import necessary modules from FastAPI, Pydantic, and requests
+# Import typing for type annotations
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import requests
+from typing import List, Dict
 
+# Define the FastAPI application instance
 app = FastAPI()
 
 # In-memory store for orders and mock inventory
-orders = []
+orders: List[Dict] = []
 mock_inventory = {
     1: 5,
     2: 10,
     3: 0  # Out of stock
 }
 
+# Define the data model for order requests
 class OrderRequest(BaseModel):
     username: str
 
+# Endpoint to place an order
+# Validates the cart, checks inventory, processes payment, and logs the order
 @app.post("/order")
 def place_order(request: OrderRequest):
     cart_items = get_cart_items(request.username)
@@ -36,38 +43,58 @@ def place_order(request: OrderRequest):
 
     return {"status": "confirmed", "items": cart_items}
 
+# Endpoint to retrieve all orders for a specific user
+@app.get("/order/{username}")
+def get_user_orders(username: str):
+    # Filter orders for the given username
+    user_orders = [order for order in orders if order["user"] == username]
+    if not user_orders:
+        raise HTTPException(status_code=404, detail="No orders found for this user")
+    return {"orders": user_orders}
 
 # ---------------------- Helpers ---------------------- #
 
+# Helper function to retrieve cart items from the cart service
+# Makes an HTTP GET request to the cart service
 def get_cart_items(username: str):
     try:
         response = requests.get(f"http://cart-service:8002/cart/{username}", timeout=3)
         response.raise_for_status()
         return response.json()
-    except requests.RequestException:
-        raise HTTPException(status_code=503, detail="Cart service unavailable")
+    except requests.RequestException as e:
+        raise HTTPException(status_code=503, detail=f"Cart service unavailable: {e}")
 
+# Helper function to check inventory availability
+# Ensures all items in the cart are in stock
 def check_inventory(cart_items):
     for item in cart_items:
         if mock_inventory.get(item["product_id"], 0) < item["quantity"]:
             return False
     return True
 
+# Helper function to deduct inventory
+# Updates the mock inventory after an order is placed
 def deduct_inventory(cart_items):
     for item in cart_items:
         mock_inventory[item["product_id"]] -= item["quantity"]
 
+# Helper function to clear a user's cart
+# Sends an HTTP DELETE request to the cart service
 def clear_cart(username: str):
     try:
         requests.delete(f"http://cart-service:8002/cart/{username}/clear", timeout=3)
-    except requests.RequestException:
-        print(f"Warning: Failed to clear cart for {username}")
+    except requests.RequestException as e:
+        print(f"Warning: Failed to clear cart for {username}: {e}")
 
+# Helper function to simulate a payment check
+# Returns False for specific usernames to simulate payment failure
 def mock_payment_check(username: str):
     return username != "fail"
 
+# Helper function to log order details
+# Logs the order status and reason (if any) to the console and in-memory store
 def log_order(user: str, status: str, reason: str = None):
-    msg = f"[ORDER] User: {user} → Status: {status.upper()}"
+    msg = f"[ORDER] User: {user} -> Status: {status.upper()}"
     if reason:
         msg += f" | Reason: {reason}"
     print(msg)

@@ -1,19 +1,21 @@
-from fastapi import FastAPI
-from typing import List
+# Import necessary modules from FastAPI and typing
+from fastapi import FastAPI, HTTPException
+from typing import List, Optional
+# Import the function to retrieve available products
+from products import get_available_products, update_product_stock
 
+# Define the FastAPI application instance
 app = FastAPI()
 
-products = [
-    {"id": 1, "name": "Laptop", "category": "Electronics", "price": 800, "description": "Gaming Laptop", "available": True},
-    {"id": 2, "name": "Phone", "category": "Electronics", "price": 500, "description": "Smartphone", "available": True},
-    {"id": 3, "name": "Shoes", "category": "Fashion", "price": 100, "description": "Running Shoes", "available": False},
-]
-
+# Endpoint to retrieve products
+# Filters products by name and category if query parameters are provided
 @app.get("/products")
-def get_products(name: str = None, category: str = None):
-    result = [p for p in products if p["available"]]
-    if name:
-        result = [p for p in result if name.lower() in p["name"].lower()]
-    if category:
-        result = [p for p in result if category.lower() in p["category"].lower()]
-    return result
+def get_products(name: Optional[str] = None, category: Optional[str] = None):
+    return get_available_products(name, category)
+
+@app.put("/products/{product_id}/stock")
+def update_stock(product_id: int, in_stock: bool):
+    updated_product = update_product_stock(product_id, in_stock)
+    if not updated_product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Stock updated successfully", "product": updated_product}

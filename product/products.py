@@ -24,3 +24,18 @@ products = [
         "in_stock": False
     }
 ]
+
+def get_available_products(name: str = None, category: str = None):
+    result = [p for p in products if p["in_stock"]]
+    if name:
+        result = [p for p in result if name.lower() in p["name"].lower()]
+    if category:
+        result = [p for p in result if category.lower() in p["category"].lower()]
+    return result
+
+def update_product_stock(product_id: int, in_stock: bool):
+    for product in products:
+        if product["id"] == product_id:
+            product["in_stock"] = in_stock
+            return product
+    return None
