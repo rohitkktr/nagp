@@ -20,12 +20,32 @@ This repository contains a microservices-based project with the following servic
    - Processes user orders.
    - Endpoints:
      - `POST /order`: Places an order for the user.
-     - `GET /order/{username}`: Retrieves all orders placed by the specified user.
 
 4. **Product Service**
    - Provides product information.
    - Endpoints:
      - `GET /products`: Retrieves available products with optional filters for name and category.
+
+5. **Nagp Frontend**
+   - A SvelteKit-based frontend for the microservices.
+   - Hosted on S3.
+   - Build, deploy, and local run instructions:
+     ```bash
+     # Navigate to the frontend directory
+     cd nagp-frontend
+
+     # Install dependencies
+     npm install
+
+     # Run the project locally
+     npm run dev
+
+     # Build the project
+     npm run build
+
+     # Deploy to S3
+     aws s3 sync build/ s3://<your-s3-bucket-name> --delete
+     ```
 
 ## Setup Instructions
 
@@ -94,10 +114,6 @@ You can use the following endpoints to test the services in Postman. Replace `<b
       "username": "<username>"
     }
     ```
-- **Get User Orders**
-  - Method: `GET`
-  - URL: `<base_url>:8003/order/{username}`
-  - Description: Retrieves all orders placed by the specified user.
 
 ### Product Service
 - **Get Products**
@@ -106,3 +122,7 @@ You can use the following endpoints to test the services in Postman. Replace `<b
   - Query Parameters (Optional):
     - `name`: Filter by product name
     - `category`: Filter by product category
+
+## Contributing
+
+Feel free to submit issues or pull requests for improvements or bug fixes.
