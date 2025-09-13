@@ -1,14 +1,20 @@
-# Import necessary modules from FastAPI and typing
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
-# Import the function to retrieve available products
 from products import get_available_products, update_product_stock
 
-# Define the FastAPI application instance
 app = FastAPI()
 
-# Endpoint to retrieve products
-# Filters products by name and category if query parameters are provided
+# ✅ Allow requests from anywhere
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],        # allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],        # GET, POST, PUT, DELETE...
+    allow_headers=["*"],        # allow all headers
+)
+
+# Example endpoints
 @app.get("/products")
 def get_products(name: Optional[str] = None, category: Optional[str] = None):
     return get_available_products(name, category)
@@ -19,3 +25,7 @@ def update_stock(product_id: int, in_stock: bool):
     if not updated_product:
         raise HTTPException(status_code=404, detail="Product not found")
     return {"message": "Stock updated successfully", "product": updated_product}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
