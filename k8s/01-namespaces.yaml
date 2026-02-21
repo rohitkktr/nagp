@@ -1,0 +1,19 @@
+---
+# Frontend Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: frontend
+  labels:
+    app: nagp
+    tier: frontend
+
+---
+# Backend Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: backend
+  labels:
+    app: nagp
+    tier: backend

@@ -1,0 +1,96 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'auth/**'
+      - 'cart/**'
+      - 'order/**'
+      - 'product/**'
+      - 'nagp-frontend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/build-and-push.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  REGISTRY: docker.io
+  # Update these with your Docker Hub username
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - name: auth-service
+            context: ./auth
+            image_name: nagp-auth-service
+          - name: cart-service
+            context: ./cart
+            image_name: nagp-cart-service
+          - name: order-service
+            context: ./order
+            image_name: nagp-order-service
+          - name: product-service
+            context: ./product
+            image_name: nagp-product-service
+          - name: frontend
+            context: ./nagp-frontend
+            image_name: nagp-frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.service.image_name }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.service.image_name }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.service.image_name }}:buildcache,mode=max
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: always()
+    steps:
+      - name: Build Status
+        run: |
+          if [ "${{ needs.build-and-push.result }}" == "success" ]; then
+            echo "✅ All Docker images built and pushed successfully!"
+          else
+            echo "❌ Docker image build failed!"
+            exit 1
+          fi

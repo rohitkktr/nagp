@@ -35,6 +35,19 @@ services:
     networks:
       - ecommerce-network
 
+  frontend:
+    build:
+      context: ./nagp-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - PUBLIC_PRODUCT_API=http://192.168.0.133:8001
+      - PUBLIC_CART_API=http:/192.168.0.133:8002
+      - PUBLIC_ORDER_API=http://192.168.0.133:8003
+      - PUBLIC_AUTH_API=http://192.168.0.133:8000
+    networks:
+      - ecommerce-network
+
 networks:
   ecommerce-network:
     driver: bridge

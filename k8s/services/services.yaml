@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: nagp
+  labels:
+    app: auth-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: auth-service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: nagp
+  labels:
+    app: product-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: http
+  selector:
+    app: product-service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+  namespace: nagp
+  labels:
+    app: cart-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8002
+    targetPort: 8002
+    protocol: TCP
+    name: http
+  selector:
+    app: cart-service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: nagp
+  labels:
+    app: order-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8003
+    targetPort: 8003
+    protocol: TCP
+    name: http
+  selector:
+    app: order-service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: nagp
+  labels:
+    app: frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: frontend

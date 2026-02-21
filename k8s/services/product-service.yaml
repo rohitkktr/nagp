@@ -1,0 +1,21 @@
+---
+# Product Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: backend
+  labels:
+    app: nagp
+    service: product-service
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: http
+  selector:
+    app: nagp
+    service: product-service

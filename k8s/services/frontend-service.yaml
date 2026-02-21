@@ -1,0 +1,27 @@
+---
+# Frontend Service (LoadBalancer - External Access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: nagp-frontend
+  namespace: frontend
+  labels:
+    app: nagp
+    service: frontend
+    tier: frontend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 3000
+    protocol: TCP
+    name: https
+  selector:
+    app: nagp
+    service: frontend

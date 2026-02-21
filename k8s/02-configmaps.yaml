@@ -1,0 +1,51 @@
+---
+# Backend ConfigMap - Database and Service Configurations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: backend
+  labels:
+    app: nagp
+    tier: backend
+data:
+  # Service URLs (internal communication)
+  AUTH_SERVICE_URL: "http://auth-service:8000"
+  PRODUCT_SERVICE_URL: "http://product-service:8001"
+  CART_SERVICE_URL: "http://cart-service:8002"
+  ORDER_SERVICE_URL: "http://order-service:8003"
+  
+  # Service Ports
+  AUTH_PORT: "8000"
+  PRODUCT_PORT: "8001"
+  CART_PORT: "8002"
+  ORDER_PORT: "8003"
+  
+  # Database Configuration (if applicable)
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "nagp_db"
+
+---
+# Frontend ConfigMap - API Endpoints
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: frontend
+  labels:
+    app: nagp
+    tier: frontend
+data:
+  # Internal API URLs via Kubernetes DNS (service.namespace.svc.cluster.local)
+  # Frontend can reach backend services using these DNS names
+  PUBLIC_AUTH_API: "http://auth-service.backend.svc.cluster.local:8000"
+  PUBLIC_PRODUCT_API: "http://product-service.backend.svc.cluster.local:8001"
+  PUBLIC_CART_API: "http://cart-service.backend.svc.cluster.local:8002"
+  PUBLIC_ORDER_API: "http://order-service.backend.svc.cluster.local:8003"
+  
+  # Frontend Port
+  FRONTEND_PORT: "3000"
+  
+  # Environment
+  NODE_ENV: "production"
